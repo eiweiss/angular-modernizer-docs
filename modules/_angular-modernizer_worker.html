@@ -1,0 +1,204 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="../"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>@angular-modernizer/worker - v1.2.0 | Angular Modernizer</title><meta name="description" content="Documentation for Angular Modernizer"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="../assets/style.css"/><link rel="stylesheet" href="../assets/highlight.css"/><script defer src="../assets/main.js"></script><script async src="../assets/icons.js" id="tsd-icons-script"></script><script async src="../assets/search.js" id="tsd-search-script"></script><script async src="../assets/navigation.js" id="tsd-nav-script"></script><script async src="../assets/hierarchy.js" id="tsd-hierarchy-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar"><div class="tsd-toolbar-contents container"><a href="../index.html" class="title">Angular Modernizer</a><div id="tsd-toolbar-links"><a href="https://www.npmjs.com/org/angular-modernizer">npm</a></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/><ul role="listbox" id="tsd-search-results"></ul><div id="tsd-search-status" aria-live="polite" aria-atomic="true"><div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-menu"></use></svg></a></div></header><div class="container container-main"><div class="col-content"><div class="tsd-page-title"><ul class="tsd-breadcrumb" aria-label="Breadcrumb"><li><a href="" aria-current="page">@angular-modernizer/worker</a></li></ul><h1>Module @angular-modernizer/worker - v1.2.0</h1></div><section class="tsd-panel tsd-comment"><div class="tsd-comment tsd-typography"><p>Worker thread script for parallel analysis with the Angular Modernizer.</p>
+<p>The <code>WorkerPool</code> and <code>ParallelExecutor</code> of <code>@angular-modernizer/core</code> start
+Node.js worker threads from a script path. The script lives in this package
+because it loads all analysis plugins, and the plugins depend on core.
+<a href="../functions/_angular-modernizer_worker.getWorkerScriptPath.html" class="tsd-kind-function">getWorkerScriptPath</a> returns that path. <a href="../interfaces/_angular-modernizer_worker.WorkerTask.html" class="tsd-kind-interface">WorkerTask</a> and
+<a href="../interfaces/_angular-modernizer_worker.WorkerResult.html" class="tsd-kind-interface">WorkerResult</a> are the messages exchanged with a worker.</p>
+</div></section><section class="tsd-panel tsd-typography"><h1 id="angular-modernizerworker" class="tsd-anchor-link">@angular-modernizer/worker<a href="#angular-modernizerworker" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h1>
+<p>Worker thread script for parallel analysis in the Angular Modernization Platform.</p>
+<h2 id="overview" class="tsd-anchor-link">Overview<a href="#overview" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p><code>@angular-modernizer/core</code> can run analysis rules in Node.js worker threads (<code>WorkerPool</code>, <code>ParallelExecutor</code>). Each worker is started from a script file. That script lives in this package, and <code>getWorkerScriptPath()</code> returns its path.</p>
+<p>The package exports:</p>
+<ul>
+<li><code>getWorkerScriptPath()</code> - absolute path to the compiled worker script (<code>dist/analysis-worker.js</code>)</li>
+<li><code>WorkerTask</code>, <code>WorkerResult</code> - message types, re-exported from <code>@angular-modernizer/core</code></li>
+</ul>
+<p>The script itself is also published as the subpath export <code>@angular-modernizer/worker/analysis-worker</code>. It can only run as a worker thread; importing it on the main thread throws.</p>
+<h2 id="why-a-separate-package" class="tsd-anchor-link">Why a Separate Package?<a href="#why-a-separate-package" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Worker threads run in isolated V8 contexts, so the worker script has to load all analysis plugins itself. The plugins depend on <code>core</code>, and <code>core</code> contains the <code>WorkerPool</code>. Placing the script in <code>core</code> would create a circular dependency.</p>
+<p>This package resolves that by:</p>
+<ol>
+<li>Depending on all plugin packages (it builds after them)</li>
+<li>Exporting a helper that returns the worker script path</li>
+<li>Being used by both programmatic API users and the MCP adapter (<code>scan-architecture</code> passes the path to the parallel executor)</li>
+</ol>
+<h2 id="installation" class="tsd-anchor-link">Installation<a href="#installation" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<pre><code class="bash"><span class="hl-0">pnpm</span><span class="hl-1"> </span><span class="hl-2">add</span><span class="hl-1"> </span><span class="hl-2">@angular-modernizer/worker</span><span class="hl-1"> </span><span class="hl-2">@angular-modernizer/core</span>
+</code><button type="button">Copy</button></pre>
+
+<p>The worker script is loaded from <code>dist/</code>, so in the monorepo all workspace packages must be built first (<code>pnpm build</code> from the root).</p>
+<h2 id="usage" class="tsd-anchor-link">Usage<a href="#usage" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<h3 id="with-the-parallelexecutor" class="tsd-anchor-link">With the ParallelExecutor<a href="#with-the-parallelexecutor" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p><code>ParallelExecutor</code> decides on its own whether to use worker threads (see <a href="#mode-selection">Mode Selection</a>). Pass the script path, the tsconfig the workers load and the plugin IDs whose rules the workers run:</p>
+<pre><code class="typescript"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">getWorkerScriptPath</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@angular-modernizer/worker&#39;</span><span class="hl-1">;</span><br/><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">ParallelExecutor</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@angular-modernizer/core&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">executor</span><span class="hl-1"> = </span><span class="hl-5">new</span><span class="hl-1"> </span><span class="hl-0">ParallelExecutor</span><span class="hl-1">({ </span><span class="hl-4">maxWorkers:</span><span class="hl-1"> </span><span class="hl-7">4</span><span class="hl-1"> });</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">results</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">executor</span><span class="hl-1">.</span><span class="hl-0">executeParallel</span><span class="hl-1">(</span><span class="hl-4">sourceFiles</span><span class="hl-1">, </span><span class="hl-4">rules</span><span class="hl-1">, {</span><br/><span class="hl-1">  </span><span class="hl-4">tsConfigPath:</span><span class="hl-1"> </span><span class="hl-2">&#39;/path/to/tsconfig.json&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-4">workerScriptPath:</span><span class="hl-1"> </span><span class="hl-0">getWorkerScriptPath</span><span class="hl-1">(),</span><br/><span class="hl-1">  </span><span class="hl-4">pluginIds:</span><span class="hl-1"> [</span><span class="hl-2">&#39;architecture&#39;</span><span class="hl-1">, </span><span class="hl-2">&#39;solid&#39;</span><span class="hl-1">],</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">executor</span><span class="hl-1">.</span><span class="hl-0">shutdown</span><span class="hl-1">();</span>
+</code><button type="button">Copy</button></pre>
+
+<h3 id="with-the-workerpool-directly" class="tsd-anchor-link">With the WorkerPool directly<a href="#with-the-workerpool-directly" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<pre><code class="typescript"><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">getWorkerScriptPath</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@angular-modernizer/worker&#39;</span><span class="hl-1">;</span><br/><span class="hl-3">import</span><span class="hl-1"> { </span><span class="hl-4">WorkerPool</span><span class="hl-1"> } </span><span class="hl-3">from</span><span class="hl-1"> </span><span class="hl-2">&#39;@angular-modernizer/core&#39;</span><span class="hl-1">;</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">pool</span><span class="hl-1"> = </span><span class="hl-5">new</span><span class="hl-1"> </span><span class="hl-0">WorkerPool</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-4">tsConfigPath:</span><span class="hl-1"> </span><span class="hl-2">&#39;/path/to/tsconfig.json&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-4">workerScriptPath:</span><span class="hl-1"> </span><span class="hl-0">getWorkerScriptPath</span><span class="hl-1">(),</span><br/><span class="hl-1">  </span><span class="hl-4">maxWorkers:</span><span class="hl-1"> </span><span class="hl-7">4</span><span class="hl-1">,</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-5">const</span><span class="hl-1"> </span><span class="hl-6">result</span><span class="hl-1"> = </span><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">pool</span><span class="hl-1">.</span><span class="hl-0">executeTask</span><span class="hl-1">({</span><br/><span class="hl-1">  </span><span class="hl-4">id:</span><span class="hl-1"> </span><span class="hl-2">&#39;task-1&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-4">type:</span><span class="hl-1"> </span><span class="hl-2">&#39;analyze-rule&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-4">filePath:</span><span class="hl-1"> </span><span class="hl-2">&#39;/path/to/file.ts&#39;</span><span class="hl-1">,</span><br/><span class="hl-1">  </span><span class="hl-4">ruleIds:</span><span class="hl-1"> [], </span><span class="hl-11">// empty: all rules of the listed plugins</span><br/><span class="hl-1">  </span><span class="hl-4">pluginIds:</span><span class="hl-1"> [</span><span class="hl-2">&#39;architecture&#39;</span><span class="hl-1">, </span><span class="hl-2">&#39;solid&#39;</span><span class="hl-1">],</span><br/><span class="hl-1">});</span><br/><br/><span class="hl-3">if</span><span class="hl-1"> (</span><span class="hl-4">result</span><span class="hl-1">.</span><span class="hl-4">error</span><span class="hl-1">) {</span><br/><span class="hl-1">  </span><span class="hl-4">console</span><span class="hl-1">.</span><span class="hl-0">error</span><span class="hl-1">(</span><span class="hl-4">result</span><span class="hl-1">.</span><span class="hl-4">error</span><span class="hl-1">);</span><br/><span class="hl-1">}</span><br/><span class="hl-4">console</span><span class="hl-1">.</span><span class="hl-0">log</span><span class="hl-1">(</span><span class="hl-4">result</span><span class="hl-1">.</span><span class="hl-4">results</span><span class="hl-1">);</span><br/><br/><span class="hl-3">await</span><span class="hl-1"> </span><span class="hl-4">pool</span><span class="hl-1">.</span><span class="hl-0">terminate</span><span class="hl-1">();</span>
+</code><button type="button">Copy</button></pre>
+
+<p><code>WorkerPool</code> throws when <code>workerScriptPath</code> is missing.</p>
+<h2 id="how-workers-run" class="tsd-anchor-link">How Workers Run<a href="#how-workers-run" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Each worker started from the script:</p>
+<ol>
+<li>Reads <code>workerId</code> and <code>tsConfigPath</code> from <code>workerData</code> and loads the whole project from that tsconfig into its own ts-morph <code>Project</code>. Rules need cross-file context (inheritance, imports), so a worker does not load single files.</li>
+<li>Creates its own <code>PublicApi</code> and posts <code>{ type: 'ready', workerId }</code>. If loading fails, it posts <code>{ type: 'init-error', workerId, error }</code> and exits. The pool only hands out tasks to workers that sent <code>ready</code>.</li>
+<li>Receives <code>WorkerTask</code> messages and answers each with a <code>WorkerResult</code>.</li>
+</ol>
+<p>For a task the worker:</p>
+<ul>
+<li>loads the analysis rules of the plugins in <code>pluginIds</code>; rules are cached per plugin ID for later tasks</li>
+<li>keeps only the rules listed in <code>ruleIds</code> when that list is not empty</li>
+<li>builds the context with <code>ContextFactory.createAnalysisContext()</code> and runs the rules on <code>filePath</code></li>
+<li>returns the results with the severity <code>warning</code> (plugin results carry no severity)</li>
+</ul>
+<p>Accepted plugin IDs:</p>
+<table>
+<thead>
+<tr>
+<th>Plugin ID</th>
+<th>Package</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>architecture</code></td>
+<td><code>@angular-modernizer/plugin-architecture</code></td>
+</tr>
+<tr>
+<td><code>solid</code></td>
+<td><code>@angular-modernizer/plugin-solid</code></td>
+</tr>
+<tr>
+<td><code>angular</code></td>
+<td><code>@angular-modernizer/plugin-angular</code></td>
+</tr>
+<tr>
+<td><code>analyzer</code></td>
+<td><code>@angular-modernizer/plugin-analyzer</code></td>
+</tr>
+<tr>
+<td><code>standalone</code></td>
+<td><code>@angular-modernizer/plugin-standalone</code> (no analysis rules)</td>
+</tr>
+</tbody>
+</table>
+<p>The full package name works as well. Unknown IDs are logged and ignored. With no matching rules the task returns an empty result list, so pass <code>pluginIds</code>: the <code>ParallelExecutor</code> sends an empty list when <code>pluginIds</code> is not set.</p>
+<p>Errors:</p>
+<ul>
+<li>A rule that throws is logged and skipped; the other rules still run.</li>
+<li>A task fails (empty <code>results</code>, <code>error</code> set) when <code>filePath</code> is not part of the loaded project or the worker is not initialized.</li>
+<li>An uncaught exception or unhandled rejection in a worker posts <code>init-error</code> and ends the worker.</li>
+</ul>
+<p>Workers log to the console with the prefix <code>[Worker &lt;id&gt;]</code>.</p>
+<h2 id="mode-selection" class="tsd-anchor-link">Mode Selection<a href="#mode-selection" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p><code>ParallelExecutor.executeParallel()</code> chooses between Promise-based parallelism on the main thread and worker threads. With <code>autoSelectMode</code> (default) and no <code>useWorkerThreads</code>, it computes a complexity score from 0 to 100:</p>
+<table>
+<thead>
+<tr>
+<th>Factor</th>
+<th>Weight</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>File count (2000 files = 100)</td>
+<td>30%</td>
+</tr>
+<tr>
+<td>Estimated lines of code (1M = 100)</td>
+<td>35%</td>
+</tr>
+<tr>
+<td>Large files over 50 KB</td>
+<td>20%</td>
+</tr>
+<tr>
+<td>Current heap usage above 70%</td>
+<td>15%</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Score</th>
+<th>Mode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>below 35</td>
+<td>Promise mode</td>
+</tr>
+<tr>
+<td>35 to below 50</td>
+<td>Promise mode with memory monitoring; aborts when heap usage reaches 85% and falls back to workers if <code>workerScriptPath</code> is set</td>
+</tr>
+<tr>
+<td>50 and above</td>
+<td>Worker threads</td>
+</tr>
+</tbody>
+</table>
+<p>Overrides:</p>
+<ul>
+<li><code>useWorkerThreads: true</code> uses workers when there are at least <code>minFilesForWorkers</code> files (default 200), otherwise Promise mode</li>
+<li><code>useWorkerThreads: false</code> always uses Promise mode</li>
+<li><code>autoSelectMode: false</code> without <code>useWorkerThreads</code> uses Promise mode</li>
+</ul>
+<p>If worker execution fails, the executor terminates the pool and falls back to Promise mode.</p>
+<p>Details: <a href="../media/parallelism.md">docs/architecture/parallelism.md</a>.</p>
+<h2 id="limits" class="tsd-anchor-link">Limits<a href="#limits" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Workers (<code>WorkerPool</code>)</td>
+<td>CPU cores - 1, at least 1</td>
+</tr>
+<tr>
+<td>Heap per worker (<code>WorkerPool</code>, <code>workerHeapLimit</code>)</td>
+<td>512 MB old generation; <code>ParallelExecutor</code> sets 4096 MB</td>
+</tr>
+<tr>
+<td>Task timeout (<code>defaultTimeout</code> / <code>timeout</code>)</td>
+<td>30000 ms, counted from the moment a worker is ready</td>
+</tr>
+<tr>
+<td>Wait for the first ready worker</td>
+<td>120 s</td>
+</tr>
+</tbody>
+</table>
+<p>Each worker loads the full project, so memory grows with the number of workers. A worker that hits its heap limit is ended by Node.js; lower <code>maxWorkers</code> or raise <code>workerHeapLimit</code> for large projects. Workers do not report their heap usage, so the pool cannot recycle them based on real memory use.</p>
+<p>Data crossing the thread boundary is copied with the structured clone algorithm. Use plain objects, primitives and arrays: functions and Symbols cause a <code>DataCloneError</code>, class instances arrive as plain objects without their methods. <code>WorkerTask.config</code> must follow this rule.</p>
+<h2 id="build-order" class="tsd-anchor-link">Build Order<a href="#build-order" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>This package builds after all plugins in the monorepo:</p>
+<pre><code><span class="hl-7">1.</span><span class="hl-1"> </span><span class="hl-4">core</span><br/><span class="hl-7">2.</span><span class="hl-1"> </span><span class="hl-4">plugin</span><span class="hl-1">-</span><span class="hl-4">system</span><br/><span class="hl-7">3.</span><span class="hl-1"> </span><span class="hl-4">api</span><br/><span class="hl-7">4.</span><span class="hl-1"> </span><span class="hl-4">plugin</span><span class="hl-1">-</span><span class="hl-4">analyzer</span><span class="hl-1">, </span><span class="hl-4">plugin</span><span class="hl-1">-</span><span class="hl-4">solid</span><span class="hl-1">, </span><span class="hl-4">plugin</span><span class="hl-1">-</span><span class="hl-4">angular</span><span class="hl-1">, </span><span class="hl-4">plugin</span><span class="hl-1">-</span><span class="hl-4">standalone</span><span class="hl-1">, </span><span class="hl-4">plugin</span><span class="hl-1">-</span><span class="hl-4">architecture</span><span class="hl-1">, </span><span class="hl-4">orchestration</span><br/><span class="hl-7">5.</span><span class="hl-1"> </span><span class="hl-0">worker</span><span class="hl-1"> (</span><span class="hl-5">this</span><span class="hl-1"> </span><span class="hl-4">package</span><span class="hl-1">)</span><br/><span class="hl-7">6.</span><span class="hl-1"> </span><span class="hl-4">adapter</span><span class="hl-1">-</span><span class="hl-4">mcp</span>
+</code><button>Copy</button></pre>
+
+<h2 id="testing" class="tsd-anchor-link">Testing<a href="#testing" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>The package has no tests of its own. The worker pool tests live in <code>@angular-modernizer/core</code> and are skipped unless <code>ENABLE_WORKER_TESTS=true</code> is set and the worker script is built:</p>
+<pre><code class="bash"><span class="hl-0">pnpm</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-2">build</span><br/><span class="hl-4">ENABLE_WORKER_TESTS</span><span class="hl-1">=</span><span class="hl-2">true</span><span class="hl-1"> </span><span class="hl-0">pnpm</span><span class="hl-1"> </span><span class="hl-5">--filter</span><span class="hl-1"> </span><span class="hl-2">@angular-modernizer/core</span><span class="hl-1"> </span><span class="hl-2">test</span>
+</code><button type="button">Copy</button></pre>
+
+<h2 id="dependencies" class="tsd-anchor-link">Dependencies<a href="#dependencies" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<ul>
+<li><code>@angular-modernizer/core</code> - <code>WorkerTask</code>, <code>WorkerResult</code></li>
+<li><code>@angular-modernizer/api</code> - <code>createPublicApi</code> for each worker</li>
+<li><code>@angular-modernizer/plugin-system</code> - <code>ContextFactory</code>, rule contracts</li>
+<li><code>@angular-modernizer/plugin-analyzer</code>, <code>plugin-solid</code>, <code>plugin-angular</code>, <code>plugin-standalone</code>, <code>plugin-architecture</code> - rules run in workers</li>
+<li><code>ts-morph</code> - project loading</li>
+</ul>
+<h2 id="see-also" class="tsd-anchor-link">See Also<a href="#see-also" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<ul>
+<li><a href="_angular-modernizer_core.html">packages/core/README.md</a> - <code>WorkerPool</code>, <code>ParallelExecutor</code></li>
+<li><a href="_angular-modernizer_plugin-system.html">packages/plugin-system/README.md</a> - Plugin contracts</li>
+</ul>
+</section><details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Interfaces"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg><h2>Interfaces</h2></summary><dl class="tsd-member-summaries"><dt class="tsd-member-summary" id="workerresult"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Interface"><use href="../assets/icons.svg#icon-256"></use></svg><a href="../interfaces/_angular-modernizer_worker.WorkerResult.html">WorkerResult</a><a href="#workerresult" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd><dt class="tsd-member-summary" id="workertask"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Interface"><use href="../assets/icons.svg#icon-256"></use></svg><a href="../interfaces/_angular-modernizer_worker.WorkerTask.html">WorkerTask</a><a href="#workertask" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd></dl></details><details class="tsd-panel-group tsd-member-group tsd-accordion" open><summary class="tsd-accordion-summary" data-key="section-Functions"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg><h2>Functions</h2></summary><dl class="tsd-member-summaries"><dt class="tsd-member-summary" id="getworkerscriptpath"><span class="tsd-member-summary-name"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Function"><use href="../assets/icons.svg#icon-64"></use></svg><a class="deprecated" href="../functions/_angular-modernizer_worker.getWorkerScriptPath.html">getWorkerScriptPath</a><a href="#getworkerscriptpath" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="../assets/icons.svg#icon-anchor"></use></svg></a></span></dt><dd class="tsd-member-summary"></dd></dl></details></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg><h3>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span><ul id="tsd-filter-options"><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div><div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div><details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg><h3>On This Page</h3></summary><div class="tsd-accordion-details"><a href="#angular-modernizerworker"><span>@angular-<wbr/>modernizer/worker</span></a><ul><li><a href="#overview"><span>Overview</span></a></li><li><a href="#why-a-separate-package"><span>Why a <wbr/>Separate <wbr/>Package?</span></a></li><li><a href="#installation"><span>Installation</span></a></li><li><a href="#usage"><span>Usage</span></a></li><li><ul><li><a href="#with-the-parallelexecutor"><span>With the <wbr/>Parallel<wbr/>Executor</span></a></li><li><a href="#with-the-workerpool-directly"><span>With the <wbr/>Worker<wbr/>Pool directly</span></a></li></ul></li><li><a href="#how-workers-run"><span>How <wbr/>Workers <wbr/>Run</span></a></li><li><a href="#mode-selection"><span>Mode <wbr/>Selection</span></a></li><li><a href="#limits"><span>Limits</span></a></li><li><a href="#build-order"><span>Build <wbr/>Order</span></a></li><li><a href="#testing"><span>Testing</span></a></li><li><a href="#dependencies"><span>Dependencies</span></a></li><li><a href="#see-also"><span>See <wbr/>Also</span></a></li></ul><details open class="tsd-accordion tsd-page-navigation-section"><summary class="tsd-accordion-summary" data-key="section-Interfaces"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>Interfaces</summary><div><a href="#workerresult"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Interface"><use href="../assets/icons.svg#icon-256"></use></svg><span>Worker<wbr/>Result</span></a><a href="#workertask"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Interface"><use href="../assets/icons.svg#icon-256"></use></svg><span>Worker<wbr/>Task</span></a></div></details><details open class="tsd-accordion tsd-page-navigation-section"><summary class="tsd-accordion-summary" data-key="section-Functions"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="../assets/icons.svg#icon-chevronDown"></use></svg>Functions</summary><div><a href="#getworkerscriptpath"><svg class="tsd-kind-icon" viewBox="0 0 24 24" aria-label="Function"><use href="../assets/icons.svg#icon-64"></use></svg><span>get<wbr/>Worker<wbr/>Script<wbr/>Path</span></a></div></details></div></details></div><div class="site-menu"><nav id="tsd-sidebar-links" class="tsd-navigation"><a href="https://www.npmjs.com/org/angular-modernizer" class="tsd-nav-link">npm</a></nav><nav class="tsd-navigation"><a href="../index.html">Angular Modernizer</a><ul class="tsd-small-nested-navigation" id="tsd-nav-container"><li>Loading...</li></ul></nav></div></div></div><footer><p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer><div class="overlay"></div></body></html>
